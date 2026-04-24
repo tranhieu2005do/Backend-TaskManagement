@@ -32,5 +32,6 @@ EXPOSE 8080
 # Set timezone if needed (uncomment and adjust if your app is time-sensitive)
 # ENV TZ=Asia/Ho_Chi_Minh
 
-# Run the jar file with basic JVM optimizations for containers
+
+# new update here
 ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
