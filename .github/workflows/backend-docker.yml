@@ -23,6 +23,7 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
       env:
+        JWT_SECRET : ${{secrets.JWT_SECRET}}
         DB_URL : ${{secrets.DB_URL}}
         DB_USERNAME : ${{secrets.DB_USERNAME}}
         DB_PASSWORD : ${{secrets.DB_PASSWORD}}
