@@ -23,26 +23,26 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
       env:
-        DB_URL = ${{secrets.DB_URL}}
-        DB_USERNAME = ${{secrets.DB_USERNAME}}
-        DB_PASSWORD = ${{secrets.DB_PASSWORD}}
-        GOOGLE_CLIENT_ID = ${{secrets.GOOGLE_CLIENT_ID}}
-        GOOGLE_CLIENT_SECRET = ${{secrets.GOOGLE_CLIENT_SECRET}}
-        GOOGLE_REDIRECT_URI = ${{secrets.GOOGLE_REDIRECT_URI}}
-        FACEBOOK_CLIENT_ID = ${{secrets.FACEBOOK_CLIENT_ID}}
-        FACEBOOK_CLIENT_SECRET = ${{secrets.FACEBOOK_CLIENT_SECRET}}
-        FACEBOOK_REDIRECT_URI = ${{secrets.FACEBOOK_REDIRECT_URI}}
-        ELASTIC_URI = ${{secrets.ELASTIC_URI}}
-        ELASTIC_USERNAME = ${{secrets.ELASTIC_USERNAME}} 
-        ELASTIC_PASSWORD = ${{secrets.ELASTIC_PASSWORD}}
-        REDIS_PORT = ${{secrets.REDIS_PORT}}
-        REDIS_HOST = ${{secrets.REDIS_HOST}}
-        REDIS_PASSWORD = ${{secrets.REDIS_PASSWORD}}
-        CLOUD_NAME = ${{secrets.CLOUD_NAME}}
-        CLOUD_API_KEY = ${{secrets.CLOUD_API_KEY}}
-        CLOUD_API_SECRET = ${{secrets.CLOUD_API_SECRET}} 
-        EMAIL = ${{secrets.EMAIL}}
-        MAIL_PASSWORD = ${{secrets.MAIL_PASSWORD}}
+        DB_URL : ${{secrets.DB_URL}}
+        DB_USERNAME : ${{secrets.DB_USERNAME}}
+        DB_PASSWORD : ${{secrets.DB_PASSWORD}}
+        GOOGLE_CLIENT_ID : ${{secrets.GOOGLE_CLIENT_ID}}
+        GOOGLE_CLIENT_SECRET : ${{secrets.GOOGLE_CLIENT_SECRET}}
+        GOOGLE_REDIRECT_URI : ${{secrets.GOOGLE_REDIRECT_URI}}
+        FACEBOOK_CLIENT_ID : ${{secrets.FACEBOOK_CLIENT_ID}}
+        FACEBOOK_CLIENT_SECRET : ${{secrets.FACEBOOK_CLIENT_SECRET}}
+        FACEBOOK_REDIRECT_URI : ${{secrets.FACEBOOK_REDIRECT_URI}}
+        ELASTIC_URI : ${{secrets.ELASTIC_URI}}
+        ELASTIC_USERNAME : ${{secrets.ELASTIC_USERNAME}}
+        ELASTIC_PASSWORD : ${{secrets.ELASTIC_PASSWORD}}
+        REDIS_PORT : ${{secrets.REDIS_PORT}}
+        REDIS_HOST : ${{secrets.REDIS_HOST}}
+        REDIS_PASSWORD : ${{secrets.REDIS_PASSWORD}}
+        CLOUD_NAME : ${{secrets.CLOUD_NAME}}
+        CLOUD_API_KEY : ${{secrets.CLOUD_API_KEY}}
+        CLOUD_API_SECRET : ${{secrets.CLOUD_API_SECRET}}
+        EMAIL : ${{secrets.EMAIL}}
+        MAIL_PASSWORD : ${{secrets.MAIL_PASSWORD}}
 
   docker:
     runs-on: ubuntu-latest
