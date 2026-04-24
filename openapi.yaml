@@ -1,0 +1,943 @@
+openapi: 3.0.3
+info:
+  title: Task Management API
+  description: API documentation for the Task Management web application, featuring task tracking, team collaboration, and real-time messaging.
+  version: 1.0.0
+servers:
+  - url: /api/v1
+    description: Base API path
+
+tags:
+  - name: Auth
+    description: Authentication and account recovery
+  - name: Users
+    description: User profile management
+  - name: Tasks
+    description: Task creation, tracking, and filtering
+  - name: Teams
+    description: Team and member management
+  - name: Comments
+    description: Task-specific discussions
+  - name: Messaging
+    description: Real-time conversations and messages
+  - name: Notifications
+    description: User alerts and notifications
+  - name: Documents
+    description: Task-attached documentation
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: refresh_token
+
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        status_code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Success
+        data:
+          type: object
+        errors:
+          type: object
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    LoginResponse:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        email:
+          type: string
+        user_name:
+          type: string
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+          nullable: true
+
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - full_name
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        full_name:
+          type: string
+
+    RegisterResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        full_name:
+          type: string
+
+    VerifyOTPRequest:
+      type: object
+      required:
+        - email
+        - otp
+      properties:
+        email:
+          type: string
+        otp:
+          type: string
+
+    VerifyOtpResponse:
+      type: object
+      properties:
+        reset_token:
+          type: string
+
+    ResetPasswordRequest:
+      type: object
+      required:
+        - email
+        - reset_token
+        - new_password
+      properties:
+        email:
+          type: string
+        reset_token:
+          type: string
+        new_password:
+          type: string
+
+    TaskResponse:
+      type: object
+      properties:
+        task_id:
+          type: integer
+        created_by:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        due_date:
+          type: string
+          format: date
+        version:
+          type: integer
+
+    TaskStatus:
+      type: string
+      enum: [todo, in_progress, review, done, over_due]
+
+    CreatedTaskRequest:
+      type: object
+      required:
+        - title
+        - due_date
+      properties:
+        team_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        due_date:
+          type: string
+          format: date
+        owner:
+          type: array
+          items:
+            type: string
+            format: email
+
+    UpdatedTaskRequest:
+      type: object
+      properties:
+        new_due_date:
+          type: string
+          format: date
+        new_status:
+          $ref: '#/components/schemas/TaskStatus'
+        version:
+          type: integer
+
+    TeamResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CreatedTeamRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    CommentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        author:
+          type: string
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CreatedCommentRequest:
+      type: object
+      required:
+        - task_id
+        - content
+      properties:
+        task_id:
+          type: integer
+        content:
+          type: string
+
+    MessageResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        sender:
+          type: string
+        content:
+          type: string
+        type:
+          type: string
+          enum: [TEXT, IMAGE, FILE]
+        url:
+          type: string
+          nullable: true
+        file_name:
+          type: string
+          nullable: true
+        file_size:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    SendMessageRequest:
+      type: object
+      required:
+        - conversation_id
+      properties:
+        conversation_id:
+          type: integer
+        content:
+          type: string
+        type:
+          type: string
+          enum: [TEXT, IMAGE, FILE]
+        file:
+          type: string
+          format: binary
+
+    ConversationResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        team_id:
+          type: integer
+        name:
+          type: string
+        number_of_members:
+          type: integer
+        last_active:
+          type: string
+          format: date-time
+        last_sender:
+          type: string
+        last_message:
+          type: string
+        last_updated:
+          type: string
+          format: date-time
+
+    NotificationResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [newcomment, due, newteam, newtask]
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    DocumentResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+          format: byte
+        created_at:
+          type: string
+          format: date-time
+
+    UpdateDocumentRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          format: byte
+
+    PageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            type: object
+        total_elements:
+          type: integer
+        page_number:
+          type: integer
+        page_size:
+          type: integer
+        total_pages:
+          type: integer
+        has_next:
+          type: boolean
+        has_previous:
+          type: boolean
+
+paths:
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: User login
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: refresh_token=abc...; HttpOnly; Secure; Path=/api/v1/auth
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      summary: User registration
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+
+  /api/v1/auth/google:
+    post:
+      tags: [Auth]
+      summary: Google OAuth2 login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+  /api/v1/auth/facebook:
+    post:
+      tags: [Auth]
+      summary: Facebook OAuth2 Login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+
+  /api/v1/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      security:
+        - CookieAuth: []
+      responses:
+        '201':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout user
+      security:
+        - CookieAuth: []
+      responses:
+        '200':
+          description: Logout successful
+
+  /api/v1/auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request password reset OTP
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: OTP sent
+
+  /api/v1/auth/verify-otp:
+    post:
+      tags: [Auth]
+      summary: Verify OTP
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOTPRequest'
+      responses:
+        '200':
+          description: OTP verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyOtpResponse'
+
+  /api/v1/auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset successful
+
+  /api/v1/user:
+    patch:
+      tags: [Users]
+      summary: Update user profile or password
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: newUsername
+          in: query
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                old_password:
+                  type: string
+                new_password:
+                  type: string
+      responses:
+        '200':
+          description: Profile updated
+
+  /api/v1/task:
+    get:
+      tags: [Tasks]
+      summary: Filter tasks
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: teamId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/TaskStatus'
+        - name: first
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: second
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageResponse'
+                  - properties:
+                      content:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TaskResponse'
+    post:
+      tags: [Tasks]
+      summary: Create new task
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatedTaskRequest'
+      responses:
+        '200':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+
+  /api/v1/task/unfinished:
+    get:
+      tags: [Tasks]
+      summary: Get unfinished tasks
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of unfinished tasks
+
+  /api/v1/task/{taskId}:
+    patch:
+      tags: [Tasks]
+      summary: Update task status or due date
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatedTaskRequest'
+      responses:
+        '200':
+          description: Task updated
+
+  /api/v1/task/elastic-search:
+    get:
+      tags: [Tasks]
+      summary: Advanced task search
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: keyword
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results
+
+  /api/v1/team:
+    get:
+      tags: [Teams]
+      summary: Get all teams of user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of teams
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageResponse'
+                  - properties:
+                      content:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TeamResponse'
+    post:
+      tags: [Teams]
+      summary: Create team
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatedTeamRequest'
+      responses:
+        '201':
+          description: Team created
+
+  /api/v1/team/{teamId}/members:
+    get:
+      tags: [Teams]
+      summary: Get team members
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of members
+
+  /api/v1/team/{teamId}/tasks:
+    get:
+      tags: [Teams]
+      summary: Get tasks by team
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of tasks
+
+  /api/v1/team-member:
+    post:
+      tags: [Teams]
+      summary: Add member to team
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: teamId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Member added
+    patch:
+      tags: [Teams]
+      summary: Remove member from team
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: teamId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Member removed
+
+  /api/v1/comment:
+    post:
+      tags: [Comments]
+      summary: Create comment
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatedCommentRequest'
+      responses:
+        '201':
+          description: Comment created
+    delete:
+      tags: [Comments]
+      summary: Delete comment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: commentId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Comment deleted
+
+  /api/v1/comment/task/{taskId}:
+    get:
+      tags: [Comments]
+      summary: Get comments for a task
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of comments
+
+  /api/v1/conversation/user/{userId}:
+    get:
+      tags: [Messaging]
+      summary: Get all conversations for a user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of conversations
+
+  /api/v1/message:
+    post:
+      tags: [Messaging]
+      summary: Send a message
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '201':
+          description: Message sent
+
+  /api/v1/message/conversation/{conversationId}:
+    get:
+      tags: [Messaging]
+      summary: Get messages in a conversation
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: cursorId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of messages
+
+  /api/v1/notification:
+    get:
+      tags: [Notifications]
+      summary: Get all notifications
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of notifications
+
+  /api/v1/notification/read-all:
+    patch:
+      tags: [Notifications]
+      summary: Mark all as read
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Success
+
+  /api/v1/notification/{notificationId}/read:
+    patch:
+      tags: [Notifications]
+      summary: Mark specific notification as read
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+
+  /api/v1/notification/unread-count:
+    get:
+      tags: [Notifications]
+      summary: Get unread count
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Count of unread notifications
+
+  /api/v1/document:
+    get:
+      tags: [Documents]
+      summary: Get document by task ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: taskId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Document content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+
+  /api/v1/document/{documentId}:
+    patch:
+      tags: [Documents]
+      summary: Update document content
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDocumentRequest'
+      responses:
+        '200':
+          description: Document updated

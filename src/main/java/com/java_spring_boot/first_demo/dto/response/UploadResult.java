@@ -1,0 +1,34 @@
+package com.java_spring_boot.first_demo.dto.response;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+@AllArgsConstructor
+public class UploadResult {
+    @JsonProperty("url")
+    private String url;
+
+    @JsonProperty("public_id")
+    private String publicId;
+
+    @JsonProperty("type")
+    private String resourceType;
+
+    @JsonProperty("thumbnail")
+    private String thumbnailUrl;
+
+    @JsonProperty("duration")
+    private Double duration;
+
+    private String originalFileName;
+
+    private Long size;
+
+    private String mimeType;
+
+    private String fileExtension;
+}
